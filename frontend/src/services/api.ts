@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { Task, CreateTaskDTO } from '../types/task';
+import type { Task, CreateTaskDTO } from '@type/task';
 
 const API_BASE_URL = 'https://api.example.com/tasks';
 
