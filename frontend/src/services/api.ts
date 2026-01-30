@@ -1,15 +1,19 @@
 import axios from 'axios';
 import type { Task, CreateTaskDTO } from '@type/task';
 
-const API_BASE_URL = 'https://api.example.com/tasks';
+const API_BASE_URL = 'http://localhost:8080/';
 
 export async function getTasks(): Promise<Task[]> {
-  const { data } = await axios.get<Task[]>(API_BASE_URL);
-  return data;
+  const url = API_BASE_URL + "api/tasks";
+  const { data } = await axios<{ data: Task[]}>({
+    method: 'GET',
+    url
+  })
+  return data.data;
 }
 
 export async function createTask(task: CreateTaskDTO): Promise<Task> {
-  const response = await axios({
+  const response = await axios<Task>({
     method: 'POST',
     data: task,
     headers: {
