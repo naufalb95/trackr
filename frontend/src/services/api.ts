@@ -13,7 +13,9 @@ export async function getTasks(): Promise<Task[]> {
 }
 
 export async function createTask(task: CreateTaskDTO): Promise<Task> {
+  const url = API_BASE_URL + "api/tasks";
   const response = await axios<Task>({
+    url,
     method: 'POST',
     data: task,
     headers: {

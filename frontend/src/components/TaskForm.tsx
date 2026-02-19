@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { createTask } from "@/services/api";
+import { createTask } from "@services/api";
 
 import type { SubmitEvent } from "react";
 import type { CreateTaskDTO, TaskStatus } from "@/types/task";
