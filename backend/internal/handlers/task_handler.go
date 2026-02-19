@@ -2,6 +2,8 @@ package handlers
 
 import (
 	"net/http"
+	"slices"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/naufalb95/trackr/internal/models"
@@ -29,4 +31,20 @@ func CreateTask(c *gin.Context) {
 	tasks = append(tasks, newTask)
 
 	c.JSON(http.StatusCreated, newTask)
+}
+
+func DeleteTask(c *gin.Context) {
+	taskIdParam := c.Param("id")
+	taskId, err := strconv.Atoi(taskIdParam)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid task ID Parameter"})
+		return
+	}
+
+	taskIndex := slices.IndexFunc(tasks, func(task models.Task) bool {
+		return task.ID == taskId
+	})
+
+	tasks = slices.Delete(tasks, taskIndex, taskIndex+1)
 }
