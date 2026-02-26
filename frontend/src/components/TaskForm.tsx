@@ -65,7 +65,7 @@ function TaskForm({ onTaskCreated }: TaskFormProps) {
             display: 'block',
             marginBottom: '0.5rem'
           }}>
-            Title *
+            Title<span style={{ color: 'red' }}>*</span>
           </label>
           <input 
             id="title"
@@ -74,7 +74,7 @@ function TaskForm({ onTaskCreated }: TaskFormProps) {
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Enter task title"
             disabled={isSubmitting}
-            style={{ width: '100%', padding: '0.5rem', fontSize: '1rem' }}
+            style={{ width: '95%', margin: '0', padding: '0.5rem', fontSize: '1rem' }}
           />
         </div>
 
@@ -92,7 +92,7 @@ function TaskForm({ onTaskCreated }: TaskFormProps) {
             placeholder="Enter task description"
             disabled={isSubmitting}
             rows={3}
-            style={{ width: '100%', padding: '0.5rem', fontSize: '1rem' }}
+            style={{ width: '95%', margin: '0', padding: '0.5rem', fontSize: '1rem' }}
           />
         </div>
 
@@ -105,7 +105,7 @@ function TaskForm({ onTaskCreated }: TaskFormProps) {
             value={status}
             onChange={(e) => setStatus(e.target.value as TaskStatus)}
             disabled={isSubmitting}
-            style={{ width: '100%', padding: '0.5rem', fontSize: '1rem' }}
+            style={{ width: '99%', margin: '0', padding: '0.5rem', fontSize: '1rem' }}
           >
             <option value="todo">To Do</option>
             <option value="in_progress">In Progress</option>
