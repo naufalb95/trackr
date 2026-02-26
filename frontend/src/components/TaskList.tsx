@@ -1,28 +1,13 @@
-import { useEffect, useState } from "react";
-import { getTasks } from "@services/api";
-
 import type { Task } from "@type/task";
 
-function TaskList({ refreshTrigger }: { refreshTrigger?: number }) {
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+interface TaskListParams {
+  tasks: Task[],
+  loading: boolean,
+  error: string | null
+}
 
-  useEffect(() => {
-    async function fetchTasks() {
-      try {
-        setLoading(true);
-        const data = await getTasks();
-        setTasks(data);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred.')
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchTasks()
-  }, [refreshTrigger])
+function TaskList(params: TaskListParams) {
+  const { tasks, loading, error } = params
 
   if (loading) {
     return <div>Loading tasks...</div>
@@ -40,7 +25,6 @@ function TaskList({ refreshTrigger }: { refreshTrigger?: number }) {
       ) : (
         <ul style={{ listStyle: 'none', padding: 0 }}>
           {tasks.map((task) => {
-            console.log('📝 Rendering task:', task)
             return (
               <li 
                 key={task.id}
