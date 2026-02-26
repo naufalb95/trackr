@@ -2,10 +2,10 @@ import { useState } from "react";
 import { createTask } from "@services/api";
 
 import type { SubmitEvent } from "react";
-import type { CreateTaskDTO, TaskStatus } from "@/types/task";
+import type { CreateTaskDTO, Task, TaskStatus } from "@/types/task";
 
 interface TaskFormProps {
-  onTaskCreated: () => void
+  onTaskCreated: (task: Task) => void
 }
 
 function TaskForm({ onTaskCreated }: TaskFormProps) {
@@ -33,13 +33,13 @@ function TaskForm({ onTaskCreated }: TaskFormProps) {
         status
       }
 
-      await createTask(taskData)
+      const task = await createTask(taskData)
 
       setTitle('')
       setDescription('')
       setStatus('todo')
 
-      onTaskCreated()
+      onTaskCreated(task)
     } catch (err) {
       console.error("Error when creating task:", err)
       setError(err instanceof Error ? err.message : "Failed to create task.")

@@ -29,3 +29,8 @@ export async function createTask(task: CreateTaskDTO): Promise<Task> {
 
   return response.data;
 }
+
+export async function deleteTask(taskId: number): Promise<void> {
+  const url = API_BASE_URL + "api/tasks/" + taskId;
+  await axios.delete(url)
+}

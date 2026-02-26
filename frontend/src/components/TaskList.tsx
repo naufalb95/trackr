@@ -1,13 +1,15 @@
 import type { Task } from "@type/task";
+import type { MouseEvent } from "react";
 
 interface TaskListParams {
   tasks: Task[],
   loading: boolean,
-  error: string | null
+  error: string | null,
+  onTaskDeleted: (taskId: number) => void
 }
 
 function TaskList(params: TaskListParams) {
-  const { tasks, loading, error } = params
+  const { tasks, loading, error, onTaskDeleted } = params
 
   if (loading) {
     return <div>Loading tasks...</div>
@@ -15,6 +17,11 @@ function TaskList(params: TaskListParams) {
 
   if (error) {
     return <div>Error: {error}</div>
+  }
+
+  const handleTaskDelete = (e: MouseEvent, taskId: number) => {
+    e.stopPropagation()
+    onTaskDeleted(taskId)
   }
 
   return (
@@ -35,6 +42,7 @@ function TaskList(params: TaskListParams) {
                   borderRadius: '4px',
                   backgroundColor: '#f9f9f9',
                 }}
+                onClick={(e) => handleTaskDelete(e, task.id)}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <strong style={{ fontSize: '1.1rem' }}>{task.title}</strong>
