@@ -1,10 +1,10 @@
 import { useState, useEffect, useEffectEvent } from "react"
-import { getTasks, deleteTask } from "@services/api"
+import { getTasks, deleteTask, updateTaskStatus } from "@services/api"
 
 import './App.css'
 import TaskList from "@components/TaskList"
 import TaskForm from "@components/TaskForm"
-import type { Task } from "@type/task"
+import type { Task, TaskStatus } from "@type/task"
 
 
 function App() {
@@ -35,6 +35,18 @@ function App() {
     setTasks([...tasks, task])
   }
 
+  const handleUpdateTaskStatus = async(taskId: number, task: TaskStatus) => {
+    const prevTasks = tasks
+
+    try {
+      await updateTaskStatus(taskId, task)
+    } catch (err) {
+      const errMessage = err instanceof Error ? err.message : "Unknown error"
+      console.error("Error when trying to update task status", errMessage)
+      setTasks(prevTasks)
+    }
+  }
+
   const handleDeleteTask = async (taskId: number) => {
     const prevTasks = tasks;
 
@@ -51,7 +63,7 @@ function App() {
   return (
     <div className="App" style={{ maxWidth: '800px', margin: '0 auto', padding: '2rem'}}>
       <h1>Trackr - Task Manager</h1>
-      <TaskList tasks={tasks} loading={loading} error={error} onTaskDeleted={handleDeleteTask} />
+      <TaskList tasks={tasks} loading={loading} error={error} onTaskDeleted={handleDeleteTask} onTaskStatusUpdated={handleUpdateTaskStatus}/>
       <TaskForm onTaskCreated={handleTaskCreated}/>
     </div>
   )

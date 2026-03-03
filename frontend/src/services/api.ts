@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { Task, CreateTaskDTO } from '@type/task';
+import type { Task, CreateTaskDTO, TaskStatus } from '@type/task';
 
 const API_BASE_URL = 'http://localhost:8080/';
 
@@ -28,6 +28,22 @@ export async function createTask(task: CreateTaskDTO): Promise<Task> {
   }
 
   return response.data;
+}
+
+export async function updateTaskStatus(taskId: number, task: TaskStatus): Promise<void> {
+  const url = API_BASE_URL + "api/tasks/" + taskId;
+  const response = await axios<Task>({
+    url,
+    method: 'PATCH',
+    data: { status: task },
+    headers: {
+      'Content-Type': "application/json"
+    }
+  });
+
+  if (response.status !== 200) {
+    throw new Error(`Failed to update task: ${response.statusText}`);
+  }
 }
 
 export async function deleteTask(taskId: number): Promise<void> {
