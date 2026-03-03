@@ -6,3 +6,7 @@ type Task struct {
 	Description string `json:"description"`
 	Status      string `json:"status"` // "todo", "in_progress", "done"
 }
+
+type TaskUpdateDTO struct {
+	Status string `json:"status"`
+}

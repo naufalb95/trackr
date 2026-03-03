@@ -33,8 +33,8 @@ func CreateTask(c *gin.Context) {
 	c.JSON(http.StatusCreated, newTask)
 }
 
-func UpdateTask(c *gin.Context) {
-	var updatedTask models.Task
+func UpdateTaskStatus(c *gin.Context) {
+	var updatedTask models.TaskUpdateDTO
 
 	if err := c.BindJSON(&updatedTask); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error})
@@ -51,7 +51,7 @@ func UpdateTask(c *gin.Context) {
 
 	for i := range tasks {
 		if tasks[i].ID == taskId {
-			tasks[i] = updatedTask
+			tasks[i].Status = updatedTask.Status
 			break
 		}
 	}
