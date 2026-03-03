@@ -33,12 +33,38 @@ func CreateTask(c *gin.Context) {
 	c.JSON(http.StatusCreated, newTask)
 }
 
+func UpdateTask(c *gin.Context) {
+	var updatedTask models.Task
+
+	if err := c.BindJSON(&updatedTask); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error})
+		return
+	}
+
+	taskIdParam := c.Param("id")
+	taskId, err := strconv.Atoi(taskIdParam)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid task ID parameter"})
+		return
+	}
+
+	for i := range tasks {
+		if tasks[i].ID == taskId {
+			tasks[i] = updatedTask
+			break
+		}
+	}
+
+	c.JSON(http.StatusOK, updatedTask)
+}
+
 func DeleteTask(c *gin.Context) {
 	taskIdParam := c.Param("id")
 	taskId, err := strconv.Atoi(taskIdParam)
 
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid task ID Parameter"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid task ID parameter"})
 		return
 	}
 
