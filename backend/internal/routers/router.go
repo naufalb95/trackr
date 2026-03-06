@@ -24,6 +24,7 @@ func SetupRouter(pool *pgxpool.Pool) *gin.Engine {
 	api := router.Group("/api")
 	{
 		api.GET("/tasks", taskHandler.GetTasks)
+		api.GET("/tasks/:id", taskHandler.GetTaskById)
 		api.POST("/tasks", taskHandler.CreateTask)
 		api.DELETE("/tasks/:id", taskHandler.DeleteTask)
 		api.PATCH("/tasks/:id", taskHandler.UpdateTaskStatus)

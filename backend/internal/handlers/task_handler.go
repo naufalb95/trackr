@@ -33,6 +33,23 @@ func (h *TaskHandler) GetTasks(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"data": tasks})
 }
 
+func (h *TaskHandler) GetTaskById(c *gin.Context) {
+	taskId := c.Param("id")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+
+	task, err := h.repo.FindById(ctx, taskId)
+
+	if err != nil {
+		fmt.Printf("Error when trying to retrieve task by ID: %s", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"data": task})
+}
+
 func (h *TaskHandler) CreateTask(c *gin.Context) {
 	var newTask model.Task
 

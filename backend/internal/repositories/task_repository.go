@@ -73,9 +73,8 @@ func (r *PostgresTaskRepository) FindAll(ctx context.Context) ([]model.Task, err
 	return tasks, nil
 }
 
-// TODO: To Be Implemented
 func (r *PostgresTaskRepository) FindById(ctx context.Context, taskId string) (*model.Task, error) {
-	var task *model.Task
+	task := &model.Task{}
 
 	query := `
 		SELECT
@@ -89,7 +88,18 @@ func (r *PostgresTaskRepository) FindById(ctx context.Context, taskId string) (*
 		WHERE "id" = $1;
 	`
 
-	err := r.pool.QueryRow(ctx, query, taskId).Scan(&task)
+	err := r.pool.QueryRow(
+		ctx,
+		query,
+		taskId,
+	).Scan(
+		&task.ID,
+		&task.Title,
+		&task.Description,
+		&task.Status,
+		&task.CreatedAt,
+		&task.UpdatedAt,
+	)
 
 	if err != nil {
 		return task, fmt.Errorf("Error when trying to find specific task: %w", err)
