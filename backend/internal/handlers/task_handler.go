@@ -80,20 +80,13 @@ func (h *TaskHandler) UpdateTaskStatus(c *gin.Context) {
 		return
 	}
 
-	// taskIdParam := c.Param("id")
-	// taskId, err := strconv.Atoi(taskIdParam)
+	taskId := c.Param("id")
 
-	// if err != nil {
-	// 	c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid task ID parameter"})
-	// 	return
-	// }
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 
-	// for i := range tasks {
-	// 	if tasks[i].ID == taskId {
-	// 		tasks[i].Status = updatedTask.Status
-	// 		break
-	// 	}
-	// }
+	defer cancel()
+
+	h.repo.UpdateStatus(ctx, taskId, updatedTask.Status)
 
 	c.JSON(http.StatusOK, updatedTask)
 }

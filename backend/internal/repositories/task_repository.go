@@ -12,7 +12,7 @@ type TaskRepository interface {
 	FindAll(ctx context.Context) ([]model.Task, error)
 	FindById(ctx context.Context, taskId string) (*model.Task, error)
 	Create(ctx context.Context, task *model.Task) error
-	Update(ctx context.Context, taskId string, task *model.Task) error
+	UpdateStatus(ctx context.Context, taskId string, status string) error
 	Delete(ctx context.Context, taskId string) error
 }
 
@@ -27,14 +27,15 @@ func NewPostgresTaskRepository(pool *pgxpool.Pool) TaskRepository {
 func (r *PostgresTaskRepository) FindAll(ctx context.Context) ([]model.Task, error) {
 	query := `
 		SELECT
-			id,
-			title,
-			description,
-			status,
-			created_at,
-			updated_at
-		FROM tasks
-		ORDER BY created_at DESC;
+			"id",
+			"title",
+			"description",
+			"status",
+			"created_at",
+			"updated_at"
+		FROM "tasks"
+		WHERE "status" != 'deleted'
+		ORDER BY "created_at" DESC;
 	`
 	rows, err := r.pool.Query(ctx, query)
 
@@ -85,7 +86,7 @@ func (r *PostgresTaskRepository) FindById(ctx context.Context, taskId string) (*
 			"created_at",
 			"updated_at"
 		FROM "tasks"
-		WHERE "id" = $1;
+		WHERE "id" = $1 AND "status" != 'deleted';
 	`
 
 	err := r.pool.QueryRow(
@@ -124,15 +125,27 @@ func (r *PostgresTaskRepository) Create(ctx context.Context, task *model.Task) e
 	return nil
 }
 
-// TODO: To Be Implemented
-func (r *PostgresTaskRepository) Update(ctx context.Context, taskId string, task *model.Task) error {
+func (r *PostgresTaskRepository) UpdateStatus(ctx context.Context, taskId string, status string) error {
+	query := `
+		UPDATE "tasks"
+		SET "status" = $1
+		WHERE "id" = $2 AND "status" != 'deleted';
+	`
+
+	_, err := r.pool.Exec(ctx, query, status, taskId)
+
+	if err != nil {
+		return fmt.Errorf("Error when trying to update task status: %w", err)
+	}
+
 	return nil
 }
 
 func (r *PostgresTaskRepository) Delete(ctx context.Context, taskId string) error {
 	query := `
-		DELETE FROM "tasks"
-		WHERE "id" = $1;
+		UPDATE "tasks"
+		SET status = 'deleted'
+		WHERE "id" = $1 AND "status" != 'deleted';
 	`
 
 	_, err := r.pool.Exec(ctx, query, taskId)
