@@ -5,6 +5,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/naufalb95/trackr/internal/handlers"
 	"github.com/naufalb95/trackr/internal/middlewares"
+	repository "github.com/naufalb95/trackr/internal/repositories"
 )
 
 func SetupRouter(pool *pgxpool.Pool) *gin.Engine {
@@ -13,13 +14,19 @@ func SetupRouter(pool *pgxpool.Pool) *gin.Engine {
 	// CORS Middleware
 	router.Use(middlewares.CORS())
 
+	// Repository
+	taskRepo := repository.NewPostgresTaskRepository(pool)
+
+	// Task Handler
+	taskHandler := handlers.NewTaskHandler(taskRepo)
+
 	// API Routers
 	api := router.Group("/api")
 	{
-		api.GET("/tasks", handlers.GetTasks)
-		api.POST("/tasks", handlers.CreateTask)
-		api.DELETE("/tasks/:id", handlers.DeleteTask)
-		api.PATCH("/tasks/:id", handlers.UpdateTaskStatus)
+		api.GET("/tasks", taskHandler.GetTasks)
+		api.POST("/tasks", taskHandler.CreateTask)
+		api.DELETE("/tasks/:id", taskHandler.DeleteTask)
+		api.PATCH("/tasks/:id", taskHandler.UpdateTaskStatus)
 	}
 
 	return router
