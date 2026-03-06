@@ -2,11 +2,12 @@ package routers
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/naufalb95/trackr/internal/handlers"
 	"github.com/naufalb95/trackr/internal/middlewares"
 )
 
-func SetupRouter() *gin.Engine {
+func SetupRouter(pool *pgxpool.Pool) *gin.Engine {
 	router := gin.Default()
 
 	// CORS Middleware
