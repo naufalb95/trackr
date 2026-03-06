@@ -10,7 +10,7 @@ import (
 
 type TaskRepository interface {
 	FindAll(ctx context.Context) ([]model.Task, error)
-	FindById(ctx context.Context, taskId string) (model.Task, error)
+	FindById(ctx context.Context, taskId string) (*model.Task, error)
 	Create(ctx context.Context, task *model.Task) error
 	Update(ctx context.Context, taskId string, task *model.Task) error
 	Delete(ctx context.Context, taskId string) error
@@ -74,8 +74,26 @@ func (r *PostgresTaskRepository) FindAll(ctx context.Context) ([]model.Task, err
 }
 
 // TODO: To Be Implemented
-func (r *PostgresTaskRepository) FindById(ctx context.Context, taskId string) (model.Task, error) {
-	var task model.Task
+func (r *PostgresTaskRepository) FindById(ctx context.Context, taskId string) (*model.Task, error) {
+	var task *model.Task
+
+	query := `
+		SELECT
+			"id",
+			"title",
+			"description",
+			"status",
+			"created_at",
+			"updated_at"
+		FROM "tasks"
+		WHERE "id" = $1;
+	`
+
+	err := r.pool.QueryRow(ctx, query, taskId).Scan(&task)
+
+	if err != nil {
+		return task, fmt.Errorf("Error when trying to find specific task: %w", err)
+	}
 
 	return task, nil
 }
