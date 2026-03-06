@@ -129,7 +129,17 @@ func (r *PostgresTaskRepository) Update(ctx context.Context, taskId string, task
 	return nil
 }
 
-// TODO: To Be Implemented
 func (r *PostgresTaskRepository) Delete(ctx context.Context, taskId string) error {
+	query := `
+		DELETE FROM "tasks"
+		WHERE "id" = $1;
+	`
+
+	_, err := r.pool.Exec(ctx, query, taskId)
+
+	if err != nil {
+		return fmt.Errorf("Error when trying to delete task: %w", err)
+	}
+
 	return nil
 }

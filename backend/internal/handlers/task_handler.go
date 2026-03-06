@@ -99,17 +99,18 @@ func (h *TaskHandler) UpdateTaskStatus(c *gin.Context) {
 }
 
 func (h *TaskHandler) DeleteTask(c *gin.Context) {
-	// taskIdParam := c.Param("id")
-	// taskId, err := strconv.Atoi(taskIdParam)
+	taskId := c.Param("id")
 
-	// if err != nil {
-	// 	c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid task ID parameter"})
-	// 	return
-	// }
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
 
-	// taskIndex := slices.IndexFunc(tasks, func(task model.Task) bool {
-	// 	return task.ID == taskId
-	// })
+	err := h.repo.Delete(ctx, taskId)
 
-	// tasks = slices.Delete(tasks, taskIndex, taskIndex+1)
+	if err != nil {
+		fmt.Printf("Error when creating task: %s", err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Error occurred when creating task."})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"status": "OK"})
 }
