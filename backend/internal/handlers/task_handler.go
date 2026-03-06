@@ -2,7 +2,9 @@ package handlers
 
 import (
 	"context"
+	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	model "github.com/naufalb95/trackr/internal/models"
@@ -18,7 +20,10 @@ func NewTaskHandler(repo repository.TaskRepository) *TaskHandler {
 }
 
 func (h *TaskHandler) GetTasks(c *gin.Context) {
-	tasks, err := h.repo.FindAll(context.Background())
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+
+	tasks, err := h.repo.FindAll(ctx)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
@@ -36,8 +41,16 @@ func (h *TaskHandler) CreateTask(c *gin.Context) {
 		return
 	}
 
-	// newTask.ID = len(tasks) + 1
-	// tasks = append(tasks, newTask)
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+
+	err := h.repo.Create(ctx, &newTask)
+
+	if err != nil {
+		fmt.Printf("Error when creating task: %s", err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Error occurred when creating task."})
+		return
+	}
 
 	c.JSON(http.StatusCreated, newTask)
 }

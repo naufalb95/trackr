@@ -80,8 +80,19 @@ func (r *PostgresTaskRepository) FindById(ctx context.Context, taskId string) (m
 	return task, nil
 }
 
-// TODO: To Be Implemented
 func (r *PostgresTaskRepository) Create(ctx context.Context, task *model.Task) error {
+	query := `
+		INSERT INTO "tasks" ("title", "description", "status")
+		VALUES ($1, $2, $3)
+		RETURNING "id", "created_at", "updated_at";
+	`
+
+	err := r.pool.QueryRow(ctx, query, task.Title, task.Description, task.Status).Scan(&task.ID, &task.CreatedAt, &task.UpdatedAt)
+
+	if err != nil {
+		return fmt.Errorf("Error when trying to create task: %w", err)
+	}
+
 	return nil
 }
 
