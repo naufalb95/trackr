@@ -1,24 +1,28 @@
-package routers
+package router
 
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/naufalb95/trackr/internal/handlers"
-	"github.com/naufalb95/trackr/internal/middlewares"
-	repository "github.com/naufalb95/trackr/internal/repositories"
+	"github.com/naufalb95/trackr/internal/handler"
+	"github.com/naufalb95/trackr/internal/middleware"
+	"github.com/naufalb95/trackr/internal/repository"
+	"github.com/naufalb95/trackr/internal/service"
 )
 
 func SetupRouter(pool *pgxpool.Pool) *gin.Engine {
 	router := gin.Default()
 
 	// CORS Middleware
-	router.Use(middlewares.CORS())
+	router.Use(middleware.CORS())
 
 	// Repository
 	taskRepo := repository.NewPostgresTaskRepository(pool)
 
+	// Task Service
+	taskService := service.NewTaskService(taskRepo)
+
 	// Task Handler
-	taskHandler := handlers.NewTaskHandler(taskRepo)
+	taskHandler := handler.NewTaskHandler(taskService)
 
 	// API Routers
 	api := router.Group("/api")

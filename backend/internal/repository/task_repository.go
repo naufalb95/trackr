@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/jackc/pgx/v5/pgxpool"
-	model "github.com/naufalb95/trackr/internal/models"
+	"github.com/naufalb95/trackr/internal/model"
 )
 
 type TaskRepository interface {

@@ -6,12 +6,12 @@ import (
 	"os"
 
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/naufalb95/trackr/internal/configs"
-	"github.com/naufalb95/trackr/internal/routers"
+	"github.com/naufalb95/trackr/internal/config"
+	"github.com/naufalb95/trackr/internal/router"
 )
 
 func main() {
-	config, err := configs.LoadConfig()
+	config, err := config.LoadConfig()
 
 	if err != nil {
 		fmt.Printf("Error when trying to load config: %v\n", err)
@@ -27,6 +27,6 @@ func main() {
 
 	defer pool.Close()
 
-	r := routers.SetupRouter(pool)
+	r := router.SetupRouter(pool)
 	_ = r.Run(config.GetServicePort())
 }

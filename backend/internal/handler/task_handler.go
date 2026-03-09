@@ -1,4 +1,4 @@
-package handlers
+package handler
 
 import (
 	"context"
@@ -7,23 +7,24 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	model "github.com/naufalb95/trackr/internal/models"
-	repository "github.com/naufalb95/trackr/internal/repositories"
+	"github.com/naufalb95/trackr/internal/dto"
+	"github.com/naufalb95/trackr/internal/model"
+	"github.com/naufalb95/trackr/internal/service"
 )
 
 type TaskHandler struct {
-	repo repository.TaskRepository
+	service service.TaskService
 }
 
-func NewTaskHandler(repo repository.TaskRepository) *TaskHandler {
-	return &TaskHandler{repo: repo}
+func NewTaskHandler(service service.TaskService) *TaskHandler {
+	return &TaskHandler{service: service}
 }
 
 func (h *TaskHandler) GetTasks(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
 
-	tasks, err := h.repo.FindAll(ctx)
+	tasks, err := h.service.GetAllTasks(ctx)
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal Server Error"})
@@ -39,7 +40,7 @@ func (h *TaskHandler) GetTaskById(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
 
-	task, err := h.repo.FindById(ctx, taskId)
+	task, err := h.service.GetSingleTask(ctx, taskId)
 
 	if err != nil {
 		fmt.Printf("Error when trying to retrieve task by ID: %s", err)
@@ -61,7 +62,7 @@ func (h *TaskHandler) CreateTask(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
 
-	err := h.repo.Create(ctx, &newTask)
+	_, err := h.service.CreateTask(ctx, &newTask)
 
 	if err != nil {
 		fmt.Printf("Error when creating task: %s", err)
@@ -73,7 +74,7 @@ func (h *TaskHandler) CreateTask(c *gin.Context) {
 }
 
 func (h *TaskHandler) UpdateTaskStatus(c *gin.Context) {
-	var updatedTask model.TaskUpdateDTO
+	var updatedTask dto.UpdateTaskDTO
 
 	if err := c.BindJSON(&updatedTask); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error})
@@ -86,7 +87,7 @@ func (h *TaskHandler) UpdateTaskStatus(c *gin.Context) {
 
 	defer cancel()
 
-	h.repo.UpdateStatus(ctx, taskId, updatedTask.Status)
+	h.service.UpdateTask(ctx, taskId, updatedTask.Status)
 
 	c.JSON(http.StatusOK, updatedTask)
 }
@@ -97,7 +98,7 @@ func (h *TaskHandler) DeleteTask(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
 
-	err := h.repo.Delete(ctx, taskId)
+	err := h.service.DeleteTask(ctx, taskId)
 
 	if err != nil {
 		fmt.Printf("Error when creating task: %s", err)
