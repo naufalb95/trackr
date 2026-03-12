@@ -13,7 +13,7 @@ type TaskService interface {
 	GetAllTasks(ctx context.Context) ([]model.Task, error)
 	GetSingleTask(ctx context.Context, taskId string) (*model.Task, error)
 	CreateTask(ctx context.Context, task *model.Task) (*model.Task, error)
-	UpdateTask(ctx context.Context, taskId string, taskStatus string) error
+	UpdateTask(ctx context.Context, taskId string, updatedFields map[string]any) error
 	DeleteTask(ctx context.Context, taskId string) error
 }
 
@@ -67,8 +67,8 @@ func (s *taskService) CreateTask(ctx context.Context, task *model.Task) (*model.
 	return task, nil
 }
 
-func (s *taskService) UpdateTask(ctx context.Context, taskId string, taskStatus string) error {
-	err := s.taskRepo.UpdateStatus(ctx, taskId, taskStatus)
+func (s *taskService) UpdateTask(ctx context.Context, taskId string, updatedFields map[string]any) error {
+	err := s.taskRepo.UpdateStatus(ctx, taskId, updatedFields)
 
 	if err != nil {
 		return err

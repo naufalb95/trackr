@@ -2,7 +2,9 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/naufalb95/trackr/internal/model"
@@ -12,7 +14,7 @@ type TaskRepository interface {
 	FindAll(ctx context.Context) ([]model.Task, error)
 	FindById(ctx context.Context, taskId string) (*model.Task, error)
 	Create(ctx context.Context, task *model.Task) error
-	UpdateStatus(ctx context.Context, taskId string, status string) error
+	UpdateStatus(ctx context.Context, taskId string, updatedFields map[string]any) error
 	Delete(ctx context.Context, taskId string) error
 }
 
@@ -125,14 +127,37 @@ func (r *PostgresTaskRepository) Create(ctx context.Context, task *model.Task) e
 	return nil
 }
 
-func (r *PostgresTaskRepository) UpdateStatus(ctx context.Context, taskId string, status string) error {
-	query := `
-		UPDATE "tasks"
-		SET "status" = $1
-		WHERE "id" = $2 AND "status" != 'deleted';
-	`
+func (r *PostgresTaskRepository) UpdateStatus(ctx context.Context, taskId string, updatedFields map[string]any) error {
+	if len(updatedFields) == 0 {
+		return errors.New("No fields to update.")
+	}
 
-	_, err := r.pool.Exec(ctx, query, status, taskId)
+	setClauses := []string{}
+	args := []any{}
+	argIdx := 2 // first index for ID where clause
+
+	args = append(args, taskId)
+
+	for key, val := range updatedFields {
+		clause := fmt.Sprintf(`"%s" = $%d`, key, argIdx)
+		args = append(args, val)
+		setClauses = append(setClauses, clause)
+		argIdx++
+	}
+
+	query := fmt.Sprintf(
+		`
+			UPDATE "tasks"
+			SET "updated_at" = NOW(), %s
+			WHERE %s AND "status" != 'deleted';
+		`,
+		strings.Join(setClauses, ", "),
+		`"id" = $1`,
+	)
+
+	fmt.Println(query)
+
+	_, err := r.pool.Exec(ctx, query, args...)
 
 	if err != nil {
 		return fmt.Errorf("Error when trying to update task status: %w", err)
