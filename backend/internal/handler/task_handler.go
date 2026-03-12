@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/naufalb95/trackr/internal/dto"
 	"github.com/naufalb95/trackr/internal/model"
 	"github.com/naufalb95/trackr/internal/service"
 )
@@ -73,7 +74,7 @@ func (h *TaskHandler) CreateTask(c *gin.Context) {
 }
 
 func (h *TaskHandler) UpdateTaskStatus(c *gin.Context) {
-	var updatedTask map[string]any
+	var updatedTask dto.UpdateTaskDTO
 
 	if err := c.BindJSON(&updatedTask); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error})
@@ -86,7 +87,13 @@ func (h *TaskHandler) UpdateTaskStatus(c *gin.Context) {
 
 	defer cancel()
 
-	h.service.UpdateTask(ctx, taskId, updatedTask)
+	err := h.service.UpdateTask(ctx, taskId, updatedTask)
+
+	if err != nil {
+		fmt.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
 
 	c.JSON(http.StatusOK, updatedTask)
 }

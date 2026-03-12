@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/naufalb95/trackr/internal/model"
 )
@@ -63,14 +64,16 @@ func (r *PostgresTaskRepository) FindAll(ctx context.Context) ([]model.Task, err
 		)
 
 		if err != nil {
-			return nil, fmt.Errorf("Error when scanning field: %w", err)
+			errorMessage := fmt.Sprintf("Error when scanning field: %v", err)
+			return nil, errors.New(errorMessage)
 		}
 
 		tasks = append(tasks, task)
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("Error when retrieving rows: %w", err)
+		errorMessage := fmt.Sprintf("Error when retrieving rows: %v", err)
+		return nil, errors.New(errorMessage)
 	}
 
 	return tasks, nil
@@ -105,7 +108,8 @@ func (r *PostgresTaskRepository) FindById(ctx context.Context, taskId string) (*
 	)
 
 	if err != nil {
-		return task, fmt.Errorf("Error when trying to find specific task: %w", err)
+		errorMessage := fmt.Sprintf("Error when trying to find specific task: %v", err)
+		return task, errors.New(errorMessage)
 	}
 
 	return task, nil
@@ -121,7 +125,8 @@ func (r *PostgresTaskRepository) Create(ctx context.Context, task *model.Task) e
 	err := r.pool.QueryRow(ctx, query, task.Title, task.Description, task.Status).Scan(&task.ID, &task.CreatedAt, &task.UpdatedAt)
 
 	if err != nil {
-		return fmt.Errorf("Error when trying to create task: %w", err)
+		errorMessage := fmt.Sprintf("Error when trying to create task: %v", err)
+		return errors.New(errorMessage)
 	}
 
 	return nil
@@ -130,6 +135,18 @@ func (r *PostgresTaskRepository) Create(ctx context.Context, task *model.Task) e
 func (r *PostgresTaskRepository) UpdateStatus(ctx context.Context, taskId string, updatedFields map[string]any) error {
 	if len(updatedFields) == 0 {
 		return errors.New("No fields to update.")
+	}
+
+	var checkTaskId string
+
+	err := r.pool.QueryRow(ctx, "SELECT id FROM tasks WHERE id = $1", taskId).Scan(&checkTaskId)
+
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return errors.New("Task not found.")
+		}
+
+		return err
 	}
 
 	setClauses := []string{}
@@ -155,12 +172,11 @@ func (r *PostgresTaskRepository) UpdateStatus(ctx context.Context, taskId string
 		`"id" = $1`,
 	)
 
-	fmt.Println(query)
-
-	_, err := r.pool.Exec(ctx, query, args...)
+	_, err = r.pool.Exec(ctx, query, args...)
 
 	if err != nil {
-		return fmt.Errorf("Error when trying to update task status: %w", err)
+		errorMessage := fmt.Sprintf("Error when trying to update task status: %v", err)
+		return errors.New(errorMessage)
 	}
 
 	return nil
@@ -176,7 +192,8 @@ func (r *PostgresTaskRepository) Delete(ctx context.Context, taskId string) erro
 	_, err := r.pool.Exec(ctx, query, taskId)
 
 	if err != nil {
-		return fmt.Errorf("Error when trying to delete task: %w", err)
+		errorMessage := fmt.Sprintf("Error when trying to delete task: %v", err)
+		return errors.New(errorMessage)
 	}
 
 	return nil
