@@ -8,7 +8,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/naufalb95/trackr/internal/dto"
-	"github.com/naufalb95/trackr/internal/model"
 	"github.com/naufalb95/trackr/internal/service"
 )
 
@@ -52,7 +51,7 @@ func (h *TaskHandler) GetTaskById(c *gin.Context) {
 }
 
 func (h *TaskHandler) CreateTask(c *gin.Context) {
-	var newTask model.Task
+	var newTask dto.CreateTaskRequest
 
 	if err := c.BindJSON(&newTask); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error})
@@ -62,7 +61,7 @@ func (h *TaskHandler) CreateTask(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
 
-	_, err := h.service.CreateTask(ctx, &newTask)
+	response, err := h.service.CreateTask(ctx, &newTask)
 
 	if err != nil {
 		fmt.Printf("Error when creating task: %s", err)
@@ -70,11 +69,11 @@ func (h *TaskHandler) CreateTask(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, newTask)
+	c.JSON(http.StatusCreated, response)
 }
 
 func (h *TaskHandler) UpdateTaskStatus(c *gin.Context) {
-	var updatedTask dto.UpdateTaskDTO
+	var updatedTask dto.UpdateTaskRequest
 
 	if err := c.BindJSON(&updatedTask); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error})
@@ -95,7 +94,7 @@ func (h *TaskHandler) UpdateTaskStatus(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, updatedTask)
+	c.JSON(http.StatusOK, gin.H{"status": "OK"})
 }
 
 func (h *TaskHandler) DeleteTask(c *gin.Context) {

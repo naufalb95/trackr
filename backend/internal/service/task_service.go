@@ -12,10 +12,10 @@ import (
 )
 
 type TaskService interface {
-	GetAllTasks(ctx context.Context) ([]model.Task, error)
-	GetSingleTask(ctx context.Context, taskId string) (*model.Task, error)
-	CreateTask(ctx context.Context, task *model.Task) (*model.Task, error)
-	UpdateTask(ctx context.Context, taskId string, updatedFields dto.UpdateTaskDTO) error
+	GetAllTasks(ctx context.Context) ([]dto.GetAllTasksResponse, error)
+	GetSingleTask(ctx context.Context, taskId string) (*dto.GetTaskByIdResponse, error)
+	CreateTask(ctx context.Context, task *dto.CreateTaskRequest) (*dto.CreateTaskResponse, error)
+	UpdateTask(ctx context.Context, taskId string, updatedFields dto.UpdateTaskRequest) error
 	DeleteTask(ctx context.Context, taskId string) error
 }
 
@@ -27,38 +27,65 @@ func NewTaskService(taskRepo repository.TaskRepository) TaskService {
 	return &taskService{taskRepo: taskRepo}
 }
 
-func (s *taskService) GetAllTasks(ctx context.Context) ([]model.Task, error) {
+func (s *taskService) GetAllTasks(ctx context.Context) ([]dto.GetAllTasksResponse, error) {
 	tasks, err := s.taskRepo.FindAll(ctx)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return tasks, nil
+	tasksResponse := make([]dto.GetAllTasksResponse, 0, len(tasks))
+
+	for _, task := range tasks {
+		task := dto.GetAllTasksResponse{
+			ID:          task.ID,
+			Title:       task.Title,
+			Description: task.Description,
+			Status:      task.Status,
+			CreatedAt:   task.CreatedAt,
+			UpdatedAt:   task.UpdatedAt,
+		}
+
+		tasksResponse = append(tasksResponse, task)
+	}
+
+	return tasksResponse, nil
 }
 
-func (s *taskService) GetSingleTask(ctx context.Context, taskId string) (*model.Task, error) {
+func (s *taskService) GetSingleTask(ctx context.Context, taskId string) (*dto.GetTaskByIdResponse, error) {
 	task, err := s.taskRepo.FindById(ctx, taskId)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return task, nil
+	taskResponse := &dto.GetTaskByIdResponse{
+		ID:          task.ID,
+		Title:       task.Title,
+		Description: task.Description,
+		Status:      task.Status,
+		CreatedAt:   task.CreatedAt,
+		UpdatedAt:   task.UpdatedAt,
+	}
+
+	return taskResponse, nil
 }
 
-func (s *taskService) CreateTask(ctx context.Context, task *model.Task) (*model.Task, error) {
+func (s *taskService) CreateTask(ctx context.Context, request *dto.CreateTaskRequest) (*dto.CreateTaskResponse, error) {
 	//! Validate name
 	//! Validate description
+	task := &model.Task{}
 
-	task.Title = strings.TrimSpace(task.Title)
-	task.Description = strings.TrimSpace(task.Description)
+	task.Title = strings.TrimSpace(request.Title)
+	task.Description = strings.TrimSpace(request.Description)
 
-	if task.Status != "todo" &&
-		task.Status != "in_progress" &&
-		task.Status != "done" {
-		return nil, errors.New("Error invalid task status")
+	if request.Status != "todo" &&
+		request.Status != "in_progress" &&
+		request.Status != "done" {
+		return nil, errors.New("Invalid task status")
 	}
+
+	task.Status = request.Status
 
 	err := s.taskRepo.Create(ctx, task)
 
@@ -66,10 +93,14 @@ func (s *taskService) CreateTask(ctx context.Context, task *model.Task) (*model.
 		return nil, err
 	}
 
-	return task, nil
+	response := &dto.CreateTaskResponse{
+		ID: task.ID,
+	}
+
+	return response, nil
 }
 
-func (s *taskService) UpdateTask(ctx context.Context, taskId string, updatedFields dto.UpdateTaskDTO) error {
+func (s *taskService) UpdateTask(ctx context.Context, taskId string, updatedFields dto.UpdateTaskRequest) error {
 	updates := make(map[string]any)
 
 	// Validation for title

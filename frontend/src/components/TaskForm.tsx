@@ -2,7 +2,7 @@ import { useState } from "react";
 import { createTask } from "@services/api";
 
 import type { SubmitEvent } from "react";
-import type { CreateTaskDTO, Task, TaskStatus } from "@/types/task";
+import type { CreateTaskRequest, Task, TaskStatus } from "@/types/task";
 
 interface TaskFormProps {
   onTaskCreated: (task: Task) => void
@@ -27,7 +27,7 @@ function TaskForm({ onTaskCreated }: TaskFormProps) {
       setIsSubmitting(true)
       setError(null)
 
-      const taskData: CreateTaskDTO = {
+      const taskData: CreateTaskRequest = {
         title: title.trim(),
         description: description.trim(),
         status
