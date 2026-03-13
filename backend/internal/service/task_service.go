@@ -2,8 +2,6 @@ package service
 
 import (
 	"context"
-	"errors"
-	"slices"
 	"strings"
 
 	"github.com/naufalb95/trackr/internal/dto"
@@ -72,20 +70,11 @@ func (s *taskService) GetSingleTask(ctx context.Context, taskId string) (*dto.Ge
 }
 
 func (s *taskService) CreateTask(ctx context.Context, request *dto.CreateTaskRequest) (*dto.CreateTaskResponse, error) {
-	//! Validate name
-	//! Validate description
-	task := &model.Task{}
-
-	task.Title = strings.TrimSpace(request.Title)
-	task.Description = strings.TrimSpace(request.Description)
-
-	if request.Status != "todo" &&
-		request.Status != "in_progress" &&
-		request.Status != "done" {
-		return nil, errors.New("Invalid task status")
+	task := &model.Task{
+		Title:       strings.TrimSpace(request.Title),
+		Description: strings.TrimSpace(request.Description),
+		Status:      request.Status,
 	}
-
-	task.Status = request.Status
 
 	err := s.taskRepo.Create(ctx, task)
 
@@ -103,8 +92,6 @@ func (s *taskService) CreateTask(ctx context.Context, request *dto.CreateTaskReq
 func (s *taskService) UpdateTask(ctx context.Context, taskId string, updatedFields dto.UpdateTaskRequest) error {
 	updates := make(map[string]any)
 
-	// Validation for title
-	//! To-Do: separate the validation to another single file for maintainability
 	if updatedFields.Title != nil {
 		title := strings.TrimSpace(*updatedFields.Title)
 		updates["title"] = title
@@ -116,17 +103,6 @@ func (s *taskService) UpdateTask(ctx context.Context, taskId string, updatedFiel
 	}
 
 	if updatedFields.Status != nil {
-		validStatus := []string{
-			"todo",
-			"in_progress",
-			"done",
-		}
-		getStatus := slices.Index(validStatus, *updatedFields.Status)
-
-		if getStatus == -1 {
-			return errors.New("Invalid status for task.")
-		}
-
 		updates["status"] = updatedFields.Status
 	}
 

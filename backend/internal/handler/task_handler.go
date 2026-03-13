@@ -7,8 +7,10 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 	"github.com/naufalb95/trackr/internal/dto"
 	"github.com/naufalb95/trackr/internal/service"
+	"github.com/naufalb95/trackr/internal/utils"
 )
 
 type TaskHandler struct {
@@ -54,6 +56,12 @@ func (h *TaskHandler) CreateTask(c *gin.Context) {
 	var newTask dto.CreateTaskRequest
 
 	if err := c.BindJSON(&newTask); err != nil {
+		if _, ok := err.(validator.ValidationErrors); ok {
+			errResponse := utils.FormValidationError(err)
+			c.JSON(http.StatusBadRequest, errResponse)
+			return
+		}
+
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error})
 		return
 	}
@@ -76,6 +84,12 @@ func (h *TaskHandler) UpdateTaskStatus(c *gin.Context) {
 	var updatedTask dto.UpdateTaskRequest
 
 	if err := c.BindJSON(&updatedTask); err != nil {
+		if _, ok := err.(validator.ValidationErrors); ok {
+			errResponse := utils.FormValidationError(err)
+			c.JSON(http.StatusBadRequest, errResponse)
+			return
+		}
+
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error})
 		return
 	}
