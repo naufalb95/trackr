@@ -22,7 +22,7 @@ func FormValidationError(err error) ErrorResponse {
 	if ve, ok := err.(validator.ValidationErrors); ok {
 		for _, fe := range ve {
 			validationErrors = append(validationErrors, ValidationError{
-				Field:   fe.Tag(),
+				Field:   fe.Field(),
 				Message: getErrorMessage(fe),
 			})
 		}
